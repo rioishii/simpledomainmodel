@@ -26,79 +26,44 @@ open class TestMe {
 public struct Money {
   public var amount : Int
   public var currency : String
-//  private var exchangeRate : [String: [String: Double]] = [
-//        "USD": ["GBP": 0.5, "EUR": 1.5, "CAN": 1.25],
-//        "GBP": ["USD": 2.0, "EUR": 3.0, "CAN": 2.5],
-//        "EUR": ["USD": 0.67, "GBP": 0.33, "CAN": 0.83],
-//        "CAN": ["USD": 0.8, "GBP": 0.4, "EUR": 1.2]
-//  ]
-    
+  private var exchangeRate : [String: [String: Double]] = [
+        "USD": ["GBP": 0.5, "EUR": 1.5, "CAN": 1.25],
+        "GBP": ["USD": 2.0, "EUR": 3.0, "CAN": 2.5],
+        "EUR": ["USD": 0.67, "GBP": 0.33, "CAN": 0.83],
+        "CAN": ["USD": 0.8, "GBP": 0.4, "EUR": 1.2]
+  ]
+
   init(amount: Int, currency: String) {
-        self.amount = amount
-        self.currency = currency
-    }
-  
-  public func convert(_ to: String) -> Money {
-    var newCurr : Money = Money(amount: self.amount, currency: to)
-    if to == "USD" {
-        switch self.currency {
-        case "GBP":
-            newCurr.amount = Int(Double(self.amount) * 2)
-        case "EUR":
-            newCurr.amount = Int(Double(self.amount) / 1.5)
-        case "CAN":
-            newCurr.amount = Int(Double(self.amount) / 1.25)
-        default:
-            newCurr.amount = self.amount
-        }
-    } else if to == "GBP" {
-        switch self.currency {
-        case "USD":
-            newCurr.amount = Int(Double(self.amount) / 2)
-        case "EUR":
-            newCurr.amount = Int(Double(self.amount) / 3)
-        case "CAN":
-            newCurr.amount = Int(Double(self.amount) / 2.5)
-        default:
-            newCurr.amount = self.amount
-        }
-    } else if to == "EUR" {
-        switch self.currency {
-        case "USD":
-            newCurr.amount = Int(Double(self.amount) * 1.5)
-        case "GBP":
-            newCurr.amount = Int(Double(self.amount) / 3)
-        case "CAN":
-            newCurr.amount = Int(Double(self.amount) * 1.2)
-        default:
-            newCurr.amount = self.amount
-        }
-    } else {
-        switch self.currency {
-        case "USD":
-            newCurr.amount = Int(Double(self.amount) * 1.25)
-        case "GBP":
-            newCurr.amount = Int(Double(self.amount) * 2.5)
-        case "EUR":
-            newCurr.amount = Int(Double(self.amount) * 0.83)
-        default:
-            newCurr.amount = self.amount
-        }
-    }
-    return newCurr
+    self.amount = amount
+    self.currency = currency
   }
-  
+
+  public func convert(_ to: String) -> Money {
+    let conversionFactor = self.exchangeRate[self.currency]![to]!
+    let newAmount = Int(Double(self.amount) * conversionFactor)
+    return Money(amount: newAmount, currency: to)
+  }
+
   public func add(_ to: Money) -> Money {
-    let converted = self.convert(to.currency)
-    let newAmount = converted.amount + to.amount
-    return Money(amount: newAmount, currency: to.currency)
+    if self.currency != to.currency {
+        let converted = self.convert(to.currency)
+        let newAmount = converted.amount + to.amount
+        return Money(amount: newAmount, currency: to.currency)
+    } else {
+        return Money(amount: self.amount + to.amount, currency: self.currency)
+    }
   }
   public func subtract(_ from: Money) -> Money {
-    let converted = self.convert(from.currency)
-    let newAmount = from.amount - converted.amount
-    return Money(amount: newAmount, currency: from.currency)
+    if self.currency != from.currency {
+        let converted = self.convert(from.currency)
+        let newAmount = from.amount - converted.amount
+        return Money(amount: newAmount, currency: from.currency)
+    } else {
+        return Money(amount: from.amount - self.amount, currency: self.currency)
+    }
   }
 }
+
 
 ////////////////////////////////////
 // Job
@@ -171,7 +136,7 @@ open class Person {
   }
   
   open func toString() -> String {
-    return "[Person: firstName:\(self.firstName) lastName:\(self.lastName) age:\(self.age) job:\(_job?.type) spouse:\(_spouse?.firstName)]"
+    return "[Person: firstName:\(self.firstName) lastName:\(self.lastName) age:\(self.age) job:\(String(describing: _job?.type)) spouse:\(String(describing: _spouse?.firstName))]"
   }
 }
 
